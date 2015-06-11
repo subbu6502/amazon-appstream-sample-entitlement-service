@@ -1,0 +1,727 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Sample AppStream Developer Entitlement Service",
+
+  "Parameters" : {
+    "AdministratorUserEmail" : {
+      "Description" : "Email associated with 3rd-party accounts of Administrator.",
+      "Type" : "String"
+    },
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 key pair.",
+      "Type" : "String"
+    },
+    "InstanceType" : {
+      "Description" : "Service EC2 instance type",
+      "Type" : "String",
+      "Default" : "t2.micro",
+      "AllowedValues" : [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "cr1.8xlarge"],
+      "ConstraintDescription" : "Must be a valid EC2 instance type"
+    },
+    "LoginWithAmazonOAuthClientId" : {
+      "Description" : "Your Login with Amazon Application's Client ID",
+      "Type" : "String",
+      "Default": ""
+    },
+    "CognitoIdentityPoolId" : {
+      "Description" : "An identity pool ID in the format REGION:GUID.",
+      "Type" : "String",
+      "AllowedPattern" : "[\\w-]+:[0-9a-f-]+"  
+    },
+    "CognitoDeveloperProviderName" : {
+      "Description" : "The \"domain\" by which Cognito will refer to your users.",
+      "Type" : "String",
+      "AllowedPattern" : "[\\w._-]+"
+    },
+    "DeploymentBucket" : {
+      "Description" : "S3 Bucket with deployment assets.",
+      "Type" : "String",
+      "Default": "netisense-des-staging-00"
+    },
+    "PortalApplicationObjectKey" : {
+      "Description" : "S3 object key for DES Portal web application archive file.",
+      "Type" : "String",
+      "Default" : "amazon-appstream-sample-entitlement-service/portal/sample-appstream-developer-entitlement-portal.tar.gz"
+    },
+    "ServiceApplicationObjectKey" : {
+      "Description" : "S3 object key for DES Service application JAR file.",
+      "Type" : "String",
+      "Default" : "amazon-appstream-sample-entitlement-service/service/target/amazon-appstream-sample-entitlement-service-2.0.0.RELEASE.jar"
+    },
+    "AdminScriptObjectKey" : {
+      "Description" : "S3 object key for Administrator User creation script.",
+      "Type" : "String",
+      "Default" : "amazon-appstream-sample-entitlement-service/infra/create-administrator-user.rb"
+    },
+    "EnableNoAuthV1EntitlementCondition" : {
+      "Description" : "S3 object key for Administrator User creation script.",
+      "Type" : "String",
+      "Default" : "false",
+      "AllowedValues" : [ "true", "false" ]
+    }
+    
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "t2.micro"    : { "Arch" : "HVM64"  },
+      "t2.small"    : { "Arch" : "HVM64"  },
+      "t2.medium"   : { "Arch" : "HVM64"  },
+      "m3.medium"   : { "Arch" : "HVM64"  },
+      "m3.large"    : { "Arch" : "HVM64"  },
+      "m3.xlarge"   : { "Arch" : "HVM64"  },
+      "m3.2xlarge"  : { "Arch" : "HVM64"  },
+      "c3.large"    : { "Arch" : "HVM64"  },
+      "c3.xlarge"   : { "Arch" : "HVM64"  },
+      "c3.2xlarge"  : { "Arch" : "HVM64"  },
+      "c3.4xlarge"  : { "Arch" : "HVM64"  },
+      "c3.8xlarge"  : { "Arch" : "HVM64"  },
+      "c4.large"    : { "Arch" : "HVM64"  },
+      "c4.xlarge"   : { "Arch" : "HVM64"  },
+      "c4.2xlarge"  : { "Arch" : "HVM64"  },
+      "c4.4xlarge"  : { "Arch" : "HVM64"  },
+      "c4.8xlarge"  : { "Arch" : "HVM64"  },
+      "r3.large"    : { "Arch" : "HVM64"  },
+      "r3.xlarge"   : { "Arch" : "HVM64"  },
+      "r3.2xlarge"  : { "Arch" : "HVM64"  },
+      "r3.4xlarge"  : { "Arch" : "HVM64"  },
+      "r3.8xlarge"  : { "Arch" : "HVM64"  },
+      "i2.xlarge"   : { "Arch" : "HVM64"  },
+      "i2.2xlarge"  : { "Arch" : "HVM64"  },
+      "i2.4xlarge"  : { "Arch" : "HVM64"  },
+      "i2.8xlarge"  : { "Arch" : "HVM64"  },
+      "hs1.8xlarge" : { "Arch" : "HVM64"  },
+      "cr1.8xlarge" : { "Arch" : "HVM64"  }
+    },
+    "AWSRegionArch2AMI" : {
+      "us-east-1"        : {"PV64" : "ami-50311038", "HVM64" : "ami-5231103a", "HVMG2" : "ami-8c6b40e4"},
+      "ap-northeast-1"   : {"PV64" : "ami-8d1df78d", "HVM64" : "ami-a51df7a5", "HVMG2" : "ami-6318e863"}
+    }
+
+  },
+
+  "Resources" : {
+    "CloudFrontDistribution" : {
+      "Type" : "AWS::CloudFront::Distribution",
+      "Properties" : {
+        "DistributionConfig" : {
+          "DefaultCacheBehavior" : {
+            "AllowedMethods" : [ "POST", "PATCH", "GET", "DELETE", "OPTIONS", "PUT", "HEAD" ],
+            "ForwardedValues" : {
+              "Headers" : [ "*" ],
+              "QueryString" : "true"
+            },
+            "TargetOriginId" : "DES",
+            "ViewerProtocolPolicy" : "https-only"
+          },
+          "DefaultRootObject" : "index.html",
+          "Enabled" : "true",
+          "Origins" : [
+              {
+              "Id" : "DES",
+              "CustomOriginConfig" :{
+                "HTTPPort" : "80",
+                "OriginProtocolPolicy" : "http-only"
+              },
+              "DomainName" : { "Fn::GetAtt" : [ "Ec2Instance", "PublicDnsName" ] }
+            }
+          ]
+        }
+      }
+    },
+    "EntitlementServiceUser" : {
+       "Type" : "AWS::DynamoDB::Table",
+       "Properties" : {
+          "AttributeDefinitions" : [ 
+            { "AttributeName" : "id", "AttributeType" : "S" },
+            { "AttributeName" : "email", "AttributeType" : "S" }
+          ],
+          "KeySchema" : [
+            { "AttributeName" : "id", "KeyType" : "HASH" }
+          ],
+          "ProvisionedThroughput" : { "ReadCapacityUnits" : 1, "WriteCapacityUnits" : 1 },
+          "GlobalSecondaryIndexes" : [
+            { "IndexName" : "emailGSI" ,
+              "KeySchema" : [
+                { "AttributeName" : "email", "KeyType" : "HASH" }
+              ],
+              "Projection" : {
+                "ProjectionType" : "KEYS_ONLY"
+              },
+              "ProvisionedThroughput" : { "ReadCapacityUnits" : 1, "WriteCapacityUnits" : 1 }
+            }
+          ]
+       }
+    },
+    "EntitlementServiceUserApplication" : {
+       "Type" : "AWS::DynamoDB::Table",
+       "Properties" : {
+          "AttributeDefinitions" : [ 
+            { "AttributeName" : "id", "AttributeType" : "S" }
+          ],
+          "KeySchema" : [
+            { "AttributeName" : "id", "KeyType" : "HASH" }
+          ],
+          "ProvisionedThroughput" : { "ReadCapacityUnits" : 1, "WriteCapacityUnits" : 1 }
+       }
+    },
+    "EntitlementServiceUserSession" : {
+       "Type" : "AWS::DynamoDB::Table",
+       "Properties" : {
+          "AttributeDefinitions" : [ 
+            { "AttributeName" : "UserId", "AttributeType" : "S" },
+            { "AttributeName" : "CreationTimeMilli", "AttributeType" : "N" }
+          ],
+          "KeySchema" : [
+            { "AttributeName" : "UserId", "KeyType" : "HASH" },
+            { "AttributeName" : "CreationTimeMilli", "KeyType" : "RANGE" }
+          ],
+          "ProvisionedThroughput" : { "ReadCapacityUnits" : 1, "WriteCapacityUnits" : 1 }
+       }
+    },
+    "EntitlementServiceUserSubscription" : {
+       "Type" : "AWS::DynamoDB::Table",
+       "Properties" : {
+          "AttributeDefinitions" : [ 
+            { "AttributeName" : "UserId", "AttributeType" : "S" },
+            { "AttributeName" : "CreationTimeMilli", "AttributeType" : "N" }
+          ],
+          "KeySchema" : [
+            { "AttributeName" : "UserId", "KeyType" : "HASH" },
+            { "AttributeName" : "CreationTimeMilli", "KeyType" : "RANGE" }
+          ],
+          "ProvisionedThroughput" : { "ReadCapacityUnits" : 1, "WriteCapacityUnits" : 1 }
+       }
+    },
+    "EntitlementServiceConfiguration" : {
+       "Type" : "AWS::DynamoDB::Table",
+       "Properties" : {
+          "AttributeDefinitions" : [
+            { "AttributeName" : "StackId", "AttributeType" : "S" }
+          ],
+          "KeySchema" : [
+            { "AttributeName" : "StackId", "KeyType" : "HASH" }
+          ],
+          "ProvisionedThroughput" : { "ReadCapacityUnits" : 1, "WriteCapacityUnits" : 1 }
+       }
+    },
+    "Ec2Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "DependsOn" : [ "AppServerVPC", "AppServerDhcpOptionsAssociation", "SubnetRouteTableAssociation", "AppServerRoute" ],
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "packages" : {
+              "yum" : {
+                "java-1.8.0-openjdk"     : [],
+                "nginx"                  : [],
+                "ruby22"                 : []
+              },
+              "rubygems" : {
+                "aws-sdk"                : []
+              }
+            },
+
+            "sources" : {
+
+              "/usr/share/nginx/html/" : { "Fn::Join" : ["", [ 
+                "https://", 
+                { "Ref" : "DeploymentBucket" }, 
+                ".s3.amazonaws.com/",
+                { "Ref" : "PortalApplicationObjectKey" } 
+              ]]}
+
+            },
+
+            "files" : {
+
+              "/opt/aws/appstream/des/v2/create-administrator-user.rb" :  {
+                "source": { "Fn::Join" : ["", [
+                  "https://", 
+                  { "Ref" : "DeploymentBucket" }, 
+                  ".s3.amazonaws.com/",  
+                  { "Ref" : "AdminScriptObjectKey" } 
+                ]]},
+                "mode"    : "000774",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/opt/aws/appstream/des/v2/sample-appstream-developer-entitlement-service.jar" :  {
+                "source": { "Fn::Join" : ["", [
+                  "https://", 
+                  { "Ref" : "DeploymentBucket" }, 
+                  ".s3.amazonaws.com/",  
+                  { "Ref" : "ServiceApplicationObjectKey" } 
+                ]]},
+                "mode"    : "000774",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/opt/aws/appstream/des/v2/application.properties" : {
+                "content" : { "Fn::Join" : ["", [
+                  "aws.cognito.identity.pool=", { "Ref" : "CognitoIdentityPoolId" }, "\n",
+                  "aws.cognito.developer.provider.name=", { "Ref" : "CognitoDeveloperProviderName" }, "\n",
+                  "cloud.aws.region.static=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/usr/share/nginx/html/settings.json" : {
+                "content" : { "Fn::Join" : ["", [
+                  "{ \n",
+                  "  \"region\": \"", { "Ref" : "AWS::Region" }, "\",\n",
+                  "  \"roleARN\": \"", {"Fn::GetAtt" : ["CognitoRole", "Arn"] }, "\",\n",
+                  "  \"cognitoIdentityPoolId\": \"", { "Ref" : "CognitoIdentityPoolId" }, "\",\n",
+                  "  \"userSubscriptionDynamoDBTable\": \"", { "Ref" : "EntitlementServiceUserSubscription" }, "\",\n",
+                  "  \"configurationDynamoDBTable\": \"", { "Ref" : "EntitlementServiceConfiguration" }, "\",\n",
+                  "  \"stackName\": \"", { "Ref" : "AWS::StackName" }, "\"\n",
+                  "}\n"
+                ]]},
+                "mode"    : "000664",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/nginx/nginx.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "user  nginx;\n",
+                  "worker_processes  auto;\n",
+                  "error_log  /var/log/nginx/error.log;\n",
+                  "error_log  /var/log/nginx/error.log  notice;\n",
+                  "error_log  /var/log/nginx/error.log  info;\n",
+                  "pid        /var/run/nginx.pid;\n",
+                  "events {\n",
+                  "    worker_connections  1024;\n",
+                  "}\n",
+                  "http {\n",
+                  "    include       /etc/nginx/mime.types;\n",
+                  "    default_type  application/octet-stream;\n",
+                  "    log_format  main  '$remote_addr - $remote_user [$time_local] \"$request\" '\n",
+                  "                      '$status $body_bytes_sent \"$http_referer\" '\n",
+                  "                      '\"$http_user_agent\" \"$http_x_forwarded_for\"';\n",
+                  "    access_log  /var/log/nginx/access.log  main;\n",
+                  "    keepalive_timeout  65;\n",
+                  "    gzip  on;\n",
+                  "    index   index.html index.htm;\n",
+                  "    server {\n",
+                  "        listen       80;\n",
+                  "        server_name  localhost;\n",
+                  "        root         /usr/share/nginx/html;\n",
+                  "        location /api/ {\n",
+                  "          proxy_pass http://localhost:8080;\n",
+                  "        }\n",
+                  "        add_header Access-Control-Allow-Origin *;\n",
+                  "    }\n",
+                  "}\n"
+                ]]},
+                "mode"    : "000644",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.Ec2Instance.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -v ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource Ec2Instance ",
+                  "         --region ", { "Ref" : "AWS::Region" }, "\n",
+                  "runas=root\n"
+                ]]}
+              }
+            },
+            "services" : {
+              "sysvinit" : {
+                "nginx" : { "enabled" : "true", "ensureRunning" : "true", 
+                              "files" : ["/etc/nginx/nginx.conf"]},
+                "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true", 
+                              "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]}
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : 
+          [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : 
+            [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "IamInstanceProfile" : { "Ref" : "InstanceProfile" },
+        "NetworkInterfaces" : [
+          { 
+            "AssociatePublicIpAddress" : "true",
+            "GroupSet"           : [ { "Ref" : "InstanceSecurityGroup" } ],
+            "SubnetId"           : { "Ref" : "AppServerSubnet" },
+            "DeviceIndex" : "0" }
+        ],
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -xe\n",
+          "yum update -y aws-cfn-bootstrap\n",
+          "yum remove -y java ruby \n",
+          "yum update -y --security \n",
+          "/opt/aws/bin/cfn-init -v ",
+          "         --stack ", { "Ref" : "AWS::StackName" },
+          "         --resource Ec2Instance ",
+          "         --region ", { "Ref" : "AWS::Region" }, "\n",
+          "chmod 777 /etc/rc.d/rc.local \n",
+          "chmod 777 /etc/rc.local \n",
+          "echo 'java -jar /opt/aws/appstream/des/v2/sample-appstream-developer-entitlement-service.jar &> /opt/aws/appstream/des/v2/entitlement-service.log' >> /etc/rc.local \n",
+          "chmod 755 /etc/rc.d/rc.local \n",
+          "chmod 755 /etc/rc.local \n",
+          "cd opt/aws/appstream/des/v2/ \n",
+          "export AWS_REGION=", { "Ref" : "AWS::Region" }, "\n",
+          "/opt/aws/appstream/des/v2/create-administrator-user.rb", " ",
+            "'",{ "Ref" : "AdministratorUserEmail" }, "' ",
+            "'",{ "Ref" : "CognitoIdentityPoolId" }, "' ",
+            "'",{ "Ref" : "CognitoDeveloperProviderName" }, "' ",
+            "'",{ "Ref" : "EntitlementServiceUser" }, "' ",
+            "'",{ "Ref" : "EntitlementServiceConfiguration" }, "' ",
+            "'",{ "Ref" : "AWS::StackName" }, "' ",
+            "'",{ "Ref" : "EnableNoAuthV1EntitlementCondition" }, "' ",
+            "'",{ "Ref" : "LoginWithAmazonOAuthClientId" }, "'\n",
+          "java -jar /opt/aws/appstream/des/v2/sample-appstream-developer-entitlement-service.jar &> /opt/aws/appstream/des/v2/entitlement-service.log \n",
+          "/opt/aws/bin/cfn-signal -e $? ",
+          "         --stack ", { "Ref" : "AWS::StackName" },
+          "         --resource Ec2Instance ",
+          "         --region ", { "Ref" : "AWS::Region" }, "\n"
+        ]]}}
+      }
+    },
+    "InstanceProfile" : {
+       "Type": "AWS::IAM::InstanceProfile",
+       "Properties": {
+          "Path": "/",
+          "Roles": [ { "Ref" : "InstanceRole" } ]
+       }
+    },
+    "InstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+           "Version" : "2012-10-17",
+           "Statement": [ {
+              "Effect": "Allow",
+              "Principal": {
+                 "Service": [ "ec2.amazonaws.com" ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+           } ]
+        },
+        "Path": "/",
+        "Policies": [ {
+          "PolicyName": "DynamoDB",
+          "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:*"
+              ],
+              "Resource": [
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceUser" } ]]},
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceUser" }, "/index/emailGSI" ]]},
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceUserSession" } ]]},
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceConfiguration" } ]]},
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceUserApplication" } ]]},
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceUserSubscription" } ]]}
+              ]
+          } ]
+          }
+        },
+        {
+          "PolicyName": "CloudFormation",
+          "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Action": [
+                "cloudformation:DescribeStackResources",
+                "cloudformation:ListStackResources"
+              ],
+              "Resource": "*"
+          } ]
+          }
+        },
+        {
+          "PolicyName": "AppStream",
+          "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Action": [
+                "appstream:*"
+              ],
+              "Resource": "*"
+          } ]
+          }
+        },
+        {
+          "PolicyName": "Cognito",
+          "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Action": [
+                "cognito-identity:GetOpenIdTokenForDeveloperIdentity",
+                "cognito-identity:LookupDeveloperIdentity",
+                "cognito-identity:UnlinkDeveloperIdentity"
+              ],
+              "Resource": "*"
+            } ]
+          }
+        } ]
+      }
+    },
+    "CognitoRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+              {
+                "Sid": "",
+                "Effect": "Allow",
+                "Principal": {
+                  "Federated": "cognito-identity.amazonaws.com"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                "Condition": {
+                  "StringEquals": {
+                    "cognito-identity.amazonaws.com:aud": { "Ref" : "CognitoIdentityPoolId" }
+                  },
+                  "ForAnyValue:StringLike": {
+                    "cognito-identity.amazonaws.com:amr": "authenticated"
+                  }
+                }
+              }
+            ]
+        },
+        "Path": "/",
+        "Policies": [ {
+          "PolicyName": "DESCognitoUsers",
+          "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:BatchGetItem",
+                  "dynamodb:Query"
+              ],
+              "Resource": [
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceUserSubscription" } ]]}
+              ],
+              "Condition": {
+                "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                        "${cognito-identity.amazonaws.com:sub}"
+                    ],
+                    "dynamodb:Attributes": [
+                        "Email",
+                        "UserId",
+                        "CreationTimeMilli",
+                        "UserApplicationId",
+                        "AppStreamApplicationId",
+                        "UserApplicationDescription",
+                        "UserApplicationName",
+                        "PerSessionTimeLimitMilli",
+                        "TotalCombinedSessionTimeLimitMilli"
+                    ]
+                },
+                "StringEqualsIfExists": {
+                    "dynamodb:Select": "SPECIFIC_ATTRIBUTES"
+                }
+              }
+            } ]
+          }
+        } ]
+      }
+    },
+    "CognitoUnauthenticatedRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+              {
+                "Sid": "",
+                "Effect": "Allow",
+                "Principal": {
+                  "Federated": "cognito-identity.amazonaws.com"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                "Condition": {
+                  "StringEquals": {
+                    "cognito-identity.amazonaws.com:aud": { "Ref" : "CognitoIdentityPoolId" }
+                  },
+                  "ForAnyValue:StringLike": {
+                    "cognito-identity.amazonaws.com:amr": "unauthenticated"
+                  }
+                }
+              }
+            ]
+        },
+        "Path": "/",
+        "Policies": [ {
+          "PolicyName": "DESCognitoUnauthenticatedUsers",
+          "PolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+              "Effect": "Allow",
+              "Action": [
+                  "dynamodb:Query"
+              ],
+              "Resource": [
+                { "Fn::Join" : ["", [ "arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref" : "EntitlementServiceConfiguration" } ]]}
+              ],
+              "Condition": {
+                "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                        { "Ref" : "AWS::StackName" }
+                    ],
+                    "dynamodb:Attributes": [
+                        "StackId",
+                        "loginWithAmazonOAuthClientId",
+                        "loginWithFacebookOAuthClientId",
+                        "loginWithGoogleClientId"
+                    ]
+                },
+                "StringEqualsIfExists": {
+                    "dynamodb:Select": "SPECIFIC_ATTRIBUTES"
+                }
+              }
+            } ]
+          }
+        } ]
+      }
+    },
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSH access via port 22 and DES V2 access to CloudFront via port 80",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" :  "0.0.0.0/0"
+
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" :  "0.0.0.0/0"
+          }
+        ],
+        "VpcId" : { "Ref" : "AppServerVPC" }
+      }
+    },
+    "AppServerVPC" : {
+        "Type" : "AWS::EC2::VPC",
+        "Properties" : {
+            "CidrBlock" : "10.0.0.0/16",
+            "EnableDnsSupport" : "true",
+            "EnableDnsHostnames" : "true"
+        }
+    },
+    "AppServerDhcpOptions" : {
+        "Type" : "AWS::EC2::DHCPOptions",
+        "Properties" : {
+            "DomainName" : "compute-1.amazonaws.com",
+            "DomainNameServers" : [ "AmazonProvidedDNS" ]
+        }
+    },
+    "AppServerDhcpOptionsAssociation" : {
+        "Type" : "AWS::EC2::VPCDHCPOptionsAssociation",
+        "Properties" : {
+            "VpcId" : {"Ref" : "AppServerVPC"},
+            "DhcpOptionsId" : {"Ref" : "AppServerDhcpOptions"}
+        }
+    },
+    "AppServerSubnet" : {
+        "Type" : "AWS::EC2::Subnet",
+        "Properties" : {
+            "VpcId" : { "Ref" : "AppServerVPC" },
+            "CidrBlock" : "10.0.0.0/18"
+        }
+    },
+    "AppServerInternetGateway" : {
+        "Type" : "AWS::EC2::InternetGateway"
+    },
+    "AttachGateway" : {
+        "Type" : "AWS::EC2::VPCGatewayAttachment",
+        "Properties" : {
+            "VpcId" : { "Ref" : "AppServerVPC" },
+            "InternetGatewayId" : { "Ref" : "AppServerInternetGateway" }
+        }
+    },
+    "AppServerRouteTable" : {
+        "Type" : "AWS::EC2::RouteTable",
+        "Properties" : {
+            "VpcId" : {"Ref" : "AppServerVPC"}
+        }
+    },
+    "AppServerRoute" : {
+        "Type" : "AWS::EC2::Route",
+        "DependsOn" : "AttachGateway",
+        "Properties" : {
+            "RouteTableId" : { "Ref" : "AppServerRouteTable" },
+            "DestinationCidrBlock" : "0.0.0.0/0",
+            "GatewayId" : { "Ref" : "AppServerInternetGateway" }
+        }
+    },
+    "SubnetRouteTableAssociation" : {
+        "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties" : {
+            "SubnetId" : { "Ref" : "AppServerSubnet" },
+            "RouteTableId" : { "Ref" : "AppServerRouteTable" }
+        }
+    }
+  },
+  "Outputs" : {
+    "InstanceId" : {
+      "Description" : "InstanceId of the newly created EC2 instance.",
+      "Value" : { "Ref" : "Ec2Instance" }
+    },
+    "InstancePublicIP" : {
+      "Description" : "Public IP address of the newly created EC2 instance.",
+      "Value" : { "Fn::GetAtt" : [ "Ec2Instance", "PublicIp" ] }
+    },
+    "InstancePublicDNS" : {
+      "Description" : "Public DNSName of the newly created EC2 instance.",
+      "Value" : { "Fn::GetAtt" : [ "Ec2Instance", "PublicDnsName" ] }
+    },
+    "CognitoAuthenticatedRoleId" : {
+      "Description" : "ID for the authenticated role to be used with the Cognito Identity Pool",
+      "Value" : { "Ref" : "CognitoRole" }
+    },
+    "CognitoUnauthenticatedRoleId" : {
+      "Description" : "ID for unauthenticated role to be used with the Cognito Identity Pool",
+      "Value" : { "Ref" : "CognitoUnauthenticatedRole" }
+    },
+    "WebPortalEndpointURL" : {
+      "Description" : "Sample Entitlement Service Web Portal Endpoint URL",
+      "Value" : { "Fn::Join" : ["", [ "https://", { "Fn::GetAtt" : [ "CloudFrontDistribution", "DomainName" ] }, "/" ] ] }
+    }
+  }
+}

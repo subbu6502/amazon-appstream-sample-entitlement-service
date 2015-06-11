@@ -1,0 +1,31 @@
+{
+  "name": "sample-appstream-developer-entitlement-portal",
+  "version": "0.0.1",
+  "description": "Web Application client for the Amazon AppStream Sample Developer Entitlement Service",
+  "keywords": [
+    "AWS",
+    "AppStream",
+    "Entitlement"
+  ],
+  "license": "APACHE 2.0",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "google": "https://apis.google.com/js/platform.js",
+    "facebook": "https://connect.facebook.net/en_US/sdk.js",
+    "aws-sdk-js": "https://github.com/aws/aws-sdk-js.git",
+    "aws-sdk-js-dynamodb-document": "https://github.com/awslabs/dynamodb-document-js-sdk.git",
+    "login-with-amazon": "https://api-cdn.amazon.com/sdk/login1.js",
+    "bootstrap": "~3.3.4",
+    "angular-bootstrap": "~0.12.1"
+  },
+  "resolutions": {
+    "angular": "~1.4.0"
+  }
+}

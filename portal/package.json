@@ -1,0 +1,35 @@
+{
+  "name": "amazon-appstream-sample-entitlement-portal",
+  "version": "0.0.1",
+  "description": "Web browser-based client for the Amazon AppStream Sample Entitlement Service",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.9",
+    "gulp-bower": "^0.0.10",
+    "gulp-concat": "^2.5.2",
+    "gulp-less": "^3.0.1",
+    "gulp-ng-annotate": "^1.0.0",
+    "gulp-uglify": "^1.2.0"
+  },
+  "devDependencies": {
+    "gulp-gzip": "^1.1.0",
+    "gulp-tar": "^1.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/awslabs/amazon-appstream-sample-entitlement-service.git"
+  },
+  "keywords": [
+    "AWS",
+    "AppStream",
+    "Entitlement"
+  ],
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/awslabs/amazon-appstream-sample-entitlement-service/issues"
+  },
+  "homepage": "https://github.com/awslabs/amazon-appstream-sample-entitlement-service"
+}
