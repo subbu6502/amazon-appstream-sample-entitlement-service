@@ -1,0 +1,56 @@
+/*
+* Custom Login Buttons
+*/
+
+#customBtnGoogle {
+  display: inline-block;
+  background: #dd4b39;
+  color: white;
+  width: 210px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+#customBtnGoogle:hover {
+  background: #dd4b39;
+  cursor: hand;
+}
+span.label {
+  font-weight: bold;
+}
+span.icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 32px;
+  height: 32px;
+}
+span.buttonText {
+  display: inline-block;
+  vertical-align: middle;
+  padding-right: 35px;*/
+  font-size: 12px;
+  font-weight: bold;
+}
+#customBtnAmazon {
+  display: inline-block;
+  background: #f5c646;
+  color: black;
+  width: 210px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+#customBtnAmazon:hover {
+  background: #f5c646;
+  cursor: hand;
+}
+#customBtnFacebook {
+  display: inline-block;
+  background: #325c9a;
+  color: white;
+  width: 210px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+#customBtnFacebook:hover {
+  background: #325c9a;
+  cursor: hand;
+}

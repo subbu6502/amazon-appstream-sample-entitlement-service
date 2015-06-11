@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html ng-app="portal">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Sample Developer Entitlement Service - Administration Console</title>
+        <link rel="stylesheet" media="screen" href="css/bootstrap.min.css">
+        <link rel="stylesheet" media="screen" href="css/index.css">
+        <link rel="stylesheet" media="screen" href="css/app.css">
+        <script src="js/angular/angular.js" type="text/javascript"></script>
+        <script src="js/angular-bootstrap/ui-bootstrap-tpls.js" type="text/javascript"></script>
+        <script src="js/login-with-amazon/index.js" type="text/javascript"></script>
+        <script src="js/google/index.js" type="text/javascript"></script>
+        <script src="js/facebook/index.js" type="text/javascript"></script>
+        <script src="js/aws-sdk-js/dist/aws-sdk.js" type="text/javascript"></script>
+        <script src="js/aws-sdk-js-dynamodb-doc.js" type="text/javascript"></script>
+        <script src="js/sample-appstream-developer-entitlement-portal-admin.js" type="text/javascript"></script>
+        <script src="js/services.js" type="text/javascript"></script>
+        <script src="js/controllers.js" type="text/javascript"></script>
+    </head>
+    <body>
+      <section ng-controller="NavController as nav">
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Sample Developer Entitlement Service -  Administration Console</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+              <li ng-class="{ active: nav.isSelected(5) }">
+                <a href ng-click="nav.selectTab(5)">Users</a></li>
+              <li ng-class="{ active: nav.isSelected(6) }">
+                <a href ng-click="nav.selectTab(6)">Applications</a></li>
+              <li ng-class="{ active: nav.isSelected(7) }">
+                <a href ng-click="nav.selectTab(7)">Subscriptions</a></li>
+              <li ng-class="{ active: nav.isSelected(8) }">
+                <a href ng-click="nav.selectTab(8)">Sessions</a></li>
+              <li ng-class="{ active: nav.isSelected(9) }">
+                <a href ng-click="nav.selectTab(9)">Configuration</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <div class="container-fluid main">
+        <div class="row" ng-controller="LoginController as login">
+          <div class="nav">
+            <div ng-show="!isLoggedIn">
+              <div id="customBtnAmazon" class="customAmazonSignIn" ng-click="doAuth('amazon')">
+                <span class="icon"><img src='/img/btn_amzn_32.png'></span>
+                <span class="buttonText">Sign in with Amazon</span>
+              </div>
+              <div id="customBtnGoogle" class="customGoogleSignIn" ng-click="doAuth('google')">
+                <span class="icon"><img src='/img/btn_google_32.png'></span>
+                <span class="buttonText">Sign in with Google</span>
+              </div>
+              <div id="customBtnFacebook" class="customFacebookSignIn" ng-click="doAuth('facebook')">
+                <span class="icon"><img src='/img/btn_fb_31.png'></span>
+                <span class="buttonText">Sign in with Facebook</span>
+              </div>
+            </div>
+          </div>
+          <div ng-show="isLoggedIn">
+            Logged in as {{identity.email}} <a href id="Logout" ng-click="logout()">Logout</a>
+          </div>
+          <div ng-show="isLoggedIn">
+            <div ng-show="nav.isSelected(5)">
+              <h2 class="sub-header">Users</h2>
+              <div ng-controller="UsersController as uc">
+                <button ng-init="showForm=false" ng-click="showForm=true" class="btn btn-default">Add User</button>
+                <div ng-show="showForm">
+                  <form novalidate>
+                    <div class="form-group">
+                      <label for="email">Email</label>
+                      <input type="text" class="form-control" id="email" placeholder="Enter User's Email" ng-model="item.email">
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" id="role" ng-model="item.role" value="Administrator">Administrator
+                      </label>
+                    </div>
+                    <button type="submit" ng-click="add(item);showForm=false" class="btn btn-default">Add</button>
+                    <button ng-click="showForm=false" class="btn btn-default">Cancel</button>
+                  </form>
+                </div>
+                <div ng-repeat="item in uc.items">
+                  <div class="row" ng-model="item">
+                    <div class="col-xs-8 col-lg-1">
+                      <p>{{item.email}}</p>
+                    </div>
+                    <div class="col-xs-4 col-lg-1">
+                      <p>{{item.role}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <button ng-click="delete(item)" class="btn btn-default">Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div ng-show="nav.isSelected(6)">
+              <h2 class="sub-header">Applications</h2>
+              <div ng-controller="UserApplicationsController as uac">
+                <button ng-init="showForm=false" ng-click="showForm=true" class="btn btn-default">Add Application</button>
+                <div ng-show="showForm">
+                  <form novalidate>
+                    <div class="form-group">
+                      <label for="appStreamApplicationId">AppStream Application Id</label>
+                      <input type="text" class="form-control" id="appStreamApplicationId" placeholder="Enter AppStream Application Id" ng-model="item.AppStreamApplicationId">
+                    </div>
+                    <div class="form-group">
+                      <label for="name">Application Name</label>
+                      <input type="text" class="form-control" id="name" placeholder="Enter custom application name" ng-model="item.UserApplicationName">
+                    </div>
+                    <div class="form-group">
+                      <label for="name">Application Description</label>
+                      <textarea class="form-control" rows="3" ng-model="item.UserApplicationDescription"></textarea>
+                    </div>
+                    <button type="submit" ng-click="add(item);showForm=false" class="btn btn-default">Add</button>
+                    <button ng-click="showForm=false" class="btn btn-default">Cancel</button>
+                  </form>
+                </div>
+                <div ng-repeat="item in uac.items">
+                  <div class="row" ng-model="item" ng-init="showForm=false">
+                    <div class="col-xs-12 col-lg-1">
+                      <p>{{item.UserApplicationName}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <p>{{item.UserApplicationDescription}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <button ng-show="!showForm" ng-click="showForm=true" class="btn btn-default">Add Subscription</button>
+                    </div>
+                    <div class="col-lg-1">
+                      <button ng-click="delete(item)" class="btn btn-default">Delete</button>
+                    </div>
+                  </div>
+                    <div ng-show="showForm">
+                      <form novalidate>
+                        <div class="form-group">
+                          <label for="email">Email</label>
+                          <input type="email" class="form-control" id="email" placeholder="Enter email" ng-model="item.Email">
+                        </div>
+                        <div class="form-group">
+                          <label for="perSessionTimeLimitMilli">Per Session Time Limit</label>
+                          <input class="form-control" id="perSessionTimeLimitMilli" placeholder="Enter time in milliseconds" ng-model="item.PerSessionTimeLimitMilli">
+                        </div>
+                        <div class="form-group">
+                          <label for="totalCombinedSessionTimeLimitMilli">Total Combined Session Time Limit</label>
+                          <input class="form-control" id="totalCombinedSessionTimeLimitMilli" placeholder="Enter time in milliseconds" ng-model="item.TotalCombinedSessionTimeLimitMilli">
+                        </div>
+                        <button ng-click="addSubscription(item);showForm=false" class="btn btn-default">
+                          Add</button>
+                        <button ng-click="showForm=false" class="btn btn-default">
+                          Cancel</button>
+                      </form>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div ng-show="nav.isSelected(7)">
+              <h2 class="sub-header">Subscriptions</h2>
+              <div ng-controller="UserSubscriptionsController as usc">
+                <div ng-repeat="item in usc.items">
+                  <div class="row" ng-model="item">
+                    <div class="col-xs-12 col-lg-1">
+                      <p>User Email: {{item.Email}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <p>Application: {{item.UserApplicationName}}</p>
+                    </div>
+                      <div class="col-lg-1">
+                      <p>Per Session Time Limit: {{item.PerSessionTimeLimitMilli}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <p>Total Time Limit: {{item.TotalCombinedSessionTimeLimitMilli}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <button ng-click="delete(item)" class="btn btn-default">Delete</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div ng-show="nav.isSelected(8)">
+              <h2 class="sub-header">Sessions</h2>
+              <div ng-controller="UserSessionsController as usc">
+                <div ng-repeat="item in usc.items">
+                  <div class="row" ng-model="item">
+                    <div class="col-xs-12 col-lg-1">
+                      <p>User Email: {{item.Email}}</p>
+                    </div>
+                    <div class="col-lg-1">
+                      <p>Application: {{item.UserApplicationName}}</p>
+                    </div>
+                      <div class="col-lg-1">
+                      <p>Per Session Time Limit: {{item.PerSessionTimeLimitMilli}}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div ng-show="nav.isSelected(9)">
+              <h2 class="sub-header">Configuration</h2>
+              <div ng-controller="ConfigurationController as sc">
+                  <div class="row" ng-model="item">
+                    <form novalidate>
+                      <div class="form-group">
+                        <label for="awsCognitoIdentityPool">Cognito Identity Pool (ARN)</label>
+                        <p>{{item.awsCognitoIdentityPool}}</p>
+                      </div>
+                      <div class="form-group">
+                        <label for="awsCognitoDeveloperProviderName">Cognito Developer Provider Name</label>
+                        <p>{{item.awsCognitoDeveloperProviderName}}</p>
+                      </div>
+                      <div class="form-group">
+                        <label for="loginWithFacebookOAuthClientId">Login with Facebook OAuth Client Id</label>
+                        <input class="form-control" type="password" id="loginWithFacebookOAuthClientId" ng-model="item.loginWithFacebookOAuthClientId">
+                      </div>
+                      <div class="form-group">
+                        <label for="loginWithFacebookOAuthClientToken">Login with Facebook OAuth Client Secret</label>
+                        <input class="form-control" type="password" id="loginWithFacebookOAuthClientToken" ng-model="item.loginWithFacebookOAuthClientToken">
+                      </div>
+                      <div class="form-group">
+                        <label for="loginWithAmazonOAuthClientId">Login with Amazon OAuth Client Id</label>
+                        <input class="form-control" type="password" id="loginWithAmazonOAuthClientId" ng-model="item.loginWithAmazonOAuthClientId">
+                      </div>
+                      <div class="form-group">
+                        <label for="loginWithGoogleClientId">Login with Google Client Id</label>
+                        <input class="form-control" type="password" id="loginWithGoogleClientId" ng-model="item.loginWithGoogleClientId">
+                      </div>
+                      <div class="form-group">
+                        <label for="loginWithGoogleClientSecret">Login with Google Client Secret</label>
+                        <input class="form-control" type="password" id="loginWithGoogleClientSecret" ng-model="item.loginWithGoogleClientSecret">
+                      </div>
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" id="enableNoAuthV1EntitlementCondition" ng-model="item.enableNoAuthV1EntitlementCondition">Enable NO Auth V1 Compatability
+                        </label>
+                      </div>
+                      <button ng-click="update(item)" class="btn btn-default">
+                        Update</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

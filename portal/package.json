@@ -1,0 +1,36 @@
+{
+  "name": "sample-appstream-developer-entitlement-portal",
+  "version": "0.0.1",
+  "description": "Web Application client for the Amazon AppStream Sample Developer Entitlement Service",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.8.11",
+    "gulp-bower": "^0.0.10",
+    "gulp-concat": "^2.5.2",
+    "gulp-less": "^3.0.1",
+    "gulp-ng-annotate": "^0.5.2",
+    "gulp-uglify": "^1.1.0"
+  },
+  "devDependencies": {
+    "gulp-gzip": "^1.1.0",
+    "gulp-tar": "^1.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/psoaresgit/sample-appstream-developer-entitlement-portal.git"
+  },
+  "keywords": [
+    "AWS",
+    "AppStream",
+    "Entitlement"
+  ],
+  "author": "Philip Soares <philips@netisense.com>",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/psoaresgit/sample-appstream-developer-entitlement-portal/issues"
+  },
+  "homepage": "https://github.com/psoaresgit/sample-appstream-developer-entitlement-portal"
+}
