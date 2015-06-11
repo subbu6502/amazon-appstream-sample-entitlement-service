@@ -16,7 +16,7 @@
       "Description" : "Service EC2 instance type",
       "Type" : "String",
       "Default" : "t2.micro",
-      "AllowedValues" : [ "t1.micro", "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "cr1.8xlarge"],
+      "AllowedValues" : [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "cr1.8xlarge"],
       "ConstraintDescription" : "Must be a valid EC2 instance type"
     },
     "LoginWithAmazonOAuthClientId" : {
@@ -42,17 +42,17 @@
     "PortalApplicationObjectKey" : {
       "Description" : "S3 object key for DES Portal web application archive file.",
       "Type" : "String",
-      "Default" : "sample-appstream-developer-entitlement-portal/sample-appstream-developer-entitlement-portal.tar.gz"
+      "Default" : "amazon-appstream-sample-entitlement-service/portal/sample-appstream-developer-entitlement-portal.tar.gz"
     },
     "ServiceApplicationObjectKey" : {
       "Description" : "S3 object key for DES Service application JAR file.",
       "Type" : "String",
-      "Default" : "sample-appstream-developer-entitlement-service/target/sample-entitlement-service-1.2.2.RELEASE.jar"
+      "Default" : "amazon-appstream-sample-entitlement-service/service/target/amazon-appstream-sample-entitlement-service-2.0.0.RELEASE.jar"
     },
     "AdminScriptObjectKey" : {
       "Description" : "S3 object key for Administrator User creation script.",
       "Type" : "String",
-      "Default" : "sample-appstream-developer-entitlement-infrastructure/create-administrator-user.rb"
+      "Default" : "amazon-appstream-sample-entitlement-service/infra/create-administrator-user.rb"
     },
     "EnableNoAuthV1EntitlementCondition" : {
       "Description" : "S3 object key for Administrator User creation script.",
@@ -65,23 +65,13 @@
 
   "Mappings" : {
     "AWSInstanceType2Arch" : {
-      "t1.micro"    : { "Arch" : "PV64"   },
       "t2.micro"    : { "Arch" : "HVM64"  },
       "t2.small"    : { "Arch" : "HVM64"  },
       "t2.medium"   : { "Arch" : "HVM64"  },
-      "m1.small"    : { "Arch" : "PV64"   },
-      "m1.medium"   : { "Arch" : "PV64"   },
-      "m1.large"    : { "Arch" : "PV64"   },
-      "m1.xlarge"   : { "Arch" : "PV64"   },
-      "m2.xlarge"   : { "Arch" : "PV64"   },
-      "m2.2xlarge"  : { "Arch" : "PV64"   },
-      "m2.4xlarge"  : { "Arch" : "PV64"   },
       "m3.medium"   : { "Arch" : "HVM64"  },
       "m3.large"    : { "Arch" : "HVM64"  },
       "m3.xlarge"   : { "Arch" : "HVM64"  },
       "m3.2xlarge"  : { "Arch" : "HVM64"  },
-      "c1.medium"   : { "Arch" : "PV64"   },
-      "c1.xlarge"   : { "Arch" : "PV64"   },
       "c3.large"    : { "Arch" : "HVM64"  },
       "c3.xlarge"   : { "Arch" : "HVM64"  },
       "c3.2xlarge"  : { "Arch" : "HVM64"  },
@@ -92,7 +82,6 @@
       "c4.2xlarge"  : { "Arch" : "HVM64"  },
       "c4.4xlarge"  : { "Arch" : "HVM64"  },
       "c4.8xlarge"  : { "Arch" : "HVM64"  },
-      "g2.2xlarge"  : { "Arch" : "HVMG2"  },
       "r3.large"    : { "Arch" : "HVM64"  },
       "r3.xlarge"   : { "Arch" : "HVM64"  },
       "r3.2xlarge"  : { "Arch" : "HVM64"  },
@@ -102,10 +91,8 @@
       "i2.2xlarge"  : { "Arch" : "HVM64"  },
       "i2.4xlarge"  : { "Arch" : "HVM64"  },
       "i2.8xlarge"  : { "Arch" : "HVM64"  },
-      "hi1.4xlarge" : { "Arch" : "HVM64"  },
       "hs1.8xlarge" : { "Arch" : "HVM64"  },
-      "cr1.8xlarge" : { "Arch" : "HVM64"  },
-      "cc2.8xlarge" : { "Arch" : "HVM64"  }
+      "cr1.8xlarge" : { "Arch" : "HVM64"  }
     },
     "AWSRegionArch2AMI" : {
       "us-east-1"        : {"PV64" : "ami-50311038", "HVM64" : "ami-5231103a", "HVMG2" : "ami-8c6b40e4"},
@@ -407,10 +394,10 @@
             "'",{ "Ref" : "CognitoIdentityPoolId" }, "' ",
             "'",{ "Ref" : "CognitoDeveloperProviderName" }, "' ",
             "'",{ "Ref" : "EntitlementServiceUser" }, "' ",
-            "'",{ "Ref" : "EntitlementServiceConfiguration" }, "'\n",
+            "'",{ "Ref" : "EntitlementServiceConfiguration" }, "' ",
             "'",{ "Ref" : "AWS::StackName" }, "' ",
             "'",{ "Ref" : "EnableNoAuthV1EntitlementCondition" }, "' ",
-            "'",{ "Ref" : "LoginWithAmazonOAuthClientId" }, "' ",
+            "'",{ "Ref" : "LoginWithAmazonOAuthClientId" }, "'\n",
           "java -jar /opt/aws/appstream/des/v2/sample-appstream-developer-entitlement-service.jar &> /opt/aws/appstream/des/v2/entitlement-service.log \n",
           "/opt/aws/bin/cfn-signal -e $? ",
           "         --stack ", { "Ref" : "AWS::StackName" },

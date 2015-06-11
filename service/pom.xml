@@ -6,10 +6,11 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>1.2.2.RELEASE</version>
     </parent>
-	<artifactId>appstream-des</artifactId>
+	<artifactId>amazon-appstream-sample-entitlement-service</artifactId>
+    <version>2.0.0.RELEASE</version>
 	<packaging>jar</packaging>
-	<name>Sample Developer Entitlement Service</name>
-	<description>Vends Amazon AppStream Entitlement URLs by subscription and 3rd-party authentication.</description>
+	<name>Amazon AppStream Sample Entitlement Service</name>
+	<description>API for retrieving of Amazon AppStream entitlement URLs by subscription. Creates and performs authentication with Amazon Cognito developer identities and 3rd-party authentication tokens. Terminates Amazon AppStream sessions that are are expired.</description>
 	<url>https://github.com/psoaresgit/appstream-des/</url>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>

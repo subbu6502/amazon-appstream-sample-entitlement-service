@@ -2,9 +2,9 @@
 
 An Angular.js frontend for the Amazon AppStream Sample (Developer) Entitlement Service (DES)
 
-## Getting started
+## Prerequisites
 
-`npm install`
+See package.json for npm modules to install.
 
 ## Packaging
 
