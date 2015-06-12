@@ -60,43 +60,42 @@
       "Default" : "false",
       "AllowedValues" : [ "true", "false" ]
     }
-    
   },
 
   "Mappings" : {
     "AWSInstanceType2Arch" : {
-      "t2.micro"    : { "Arch" : "HVM64"  },
-      "t2.small"    : { "Arch" : "HVM64"  },
-      "t2.medium"   : { "Arch" : "HVM64"  },
-      "m3.medium"   : { "Arch" : "HVM64"  },
-      "m3.large"    : { "Arch" : "HVM64"  },
-      "m3.xlarge"   : { "Arch" : "HVM64"  },
-      "m3.2xlarge"  : { "Arch" : "HVM64"  },
-      "c3.large"    : { "Arch" : "HVM64"  },
-      "c3.xlarge"   : { "Arch" : "HVM64"  },
-      "c3.2xlarge"  : { "Arch" : "HVM64"  },
-      "c3.4xlarge"  : { "Arch" : "HVM64"  },
-      "c3.8xlarge"  : { "Arch" : "HVM64"  },
-      "c4.large"    : { "Arch" : "HVM64"  },
-      "c4.xlarge"   : { "Arch" : "HVM64"  },
-      "c4.2xlarge"  : { "Arch" : "HVM64"  },
-      "c4.4xlarge"  : { "Arch" : "HVM64"  },
-      "c4.8xlarge"  : { "Arch" : "HVM64"  },
-      "r3.large"    : { "Arch" : "HVM64"  },
-      "r3.xlarge"   : { "Arch" : "HVM64"  },
-      "r3.2xlarge"  : { "Arch" : "HVM64"  },
-      "r3.4xlarge"  : { "Arch" : "HVM64"  },
-      "r3.8xlarge"  : { "Arch" : "HVM64"  },
-      "i2.xlarge"   : { "Arch" : "HVM64"  },
-      "i2.2xlarge"  : { "Arch" : "HVM64"  },
-      "i2.4xlarge"  : { "Arch" : "HVM64"  },
-      "i2.8xlarge"  : { "Arch" : "HVM64"  },
-      "hs1.8xlarge" : { "Arch" : "HVM64"  },
-      "cr1.8xlarge" : { "Arch" : "HVM64"  }
+      "t2.micro"    : { "Arch" : "HVM64" },
+      "t2.small"    : { "Arch" : "HVM64" },
+      "t2.medium"   : { "Arch" : "HVM64" },
+      "m3.medium"   : { "Arch" : "HVM64" },
+      "m3.large"    : { "Arch" : "HVM64" },
+      "m3.xlarge"   : { "Arch" : "HVM64" },
+      "m3.2xlarge"  : { "Arch" : "HVM64" },
+      "c3.large"    : { "Arch" : "HVM64" },
+      "c3.xlarge"   : { "Arch" : "HVM64" },
+      "c3.2xlarge"  : { "Arch" : "HVM64" },
+      "c3.4xlarge"  : { "Arch" : "HVM64" },
+      "c3.8xlarge"  : { "Arch" : "HVM64" },
+      "c4.large"    : { "Arch" : "HVM64" },
+      "c4.xlarge"   : { "Arch" : "HVM64" },
+      "c4.2xlarge"  : { "Arch" : "HVM64" },
+      "c4.4xlarge"  : { "Arch" : "HVM64" },
+      "c4.8xlarge"  : { "Arch" : "HVM64" },
+      "r3.large"    : { "Arch" : "HVM64" },
+      "r3.xlarge"   : { "Arch" : "HVM64" },
+      "r3.2xlarge"  : { "Arch" : "HVM64" },
+      "r3.4xlarge"  : { "Arch" : "HVM64" },
+      "r3.8xlarge"  : { "Arch" : "HVM64" },
+      "i2.xlarge"   : { "Arch" : "HVM64" },
+      "i2.2xlarge"  : { "Arch" : "HVM64" },
+      "i2.4xlarge"  : { "Arch" : "HVM64" },
+      "i2.8xlarge"  : { "Arch" : "HVM64" },
+      "hs1.8xlarge" : { "Arch" : "HVM64" },
+      "cr1.8xlarge" : { "Arch" : "HVM64" }
     },
     "AWSRegionArch2AMI" : {
-      "us-east-1"        : {"PV64" : "ami-50311038", "HVM64" : "ami-5231103a", "HVMG2" : "ami-8c6b40e4"},
-      "ap-northeast-1"   : {"PV64" : "ami-8d1df78d", "HVM64" : "ami-a51df7a5", "HVMG2" : "ami-6318e863"}
+      "us-east-1"        : { "HVM64" : "ami-5231103a" },
+      "ap-northeast-1"   : { "HVM64" : "ami-a51df7a5" }
     }
 
   },

@@ -2,7 +2,7 @@
 require 'aws-sdk'
 require 'base64'
 
-email 				             = ARGV[0]
+email                      = ARGV[0]
 cognito_identity_pool_id 	 = ARGV[1]
 developer_provider_name 	 = ARGV[2]
 dynamodb_table_name 		   = ARGV[3]
@@ -42,8 +42,8 @@ resp = dynamodb.put_item(
   table_name: dynamodb_table_name_config,
   item: {
     "StackId"                             => ARGV[5],
-    "enableNoAuthV1EntitlementCondition"  => ARGV[7],
-    "loginWithAmazonOAuthClientId"        => ARGV[8]
+    "enableNoAuthV1EntitlementCondition"  => ARGV[6],
+    "loginWithAmazonOAuthClientId"        => ARGV[7]
   }
 )
 

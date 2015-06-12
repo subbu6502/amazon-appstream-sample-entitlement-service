@@ -23,7 +23,9 @@
     "aws-sdk-js-dynamodb-document": "https://github.com/awslabs/dynamodb-document-js-sdk.git",
     "login-with-amazon": "https://api-cdn.amazon.com/sdk/login1.js",
     "bootstrap": "~3.3.4",
-    "angular-bootstrap": "~0.12.1"
+    "bootstrap-dashboard": "http://getbootstrap.com/examples/dashboard/dashboard.css",
+    "angular-bootstrap": "~0.12.1",
+    "angular": "1.4.0"
   },
   "resolutions": {
     "angular": "~1.4.0"
