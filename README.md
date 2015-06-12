@@ -28,7 +28,7 @@ See the README.md files in subdirectories of this repository for more documentat
 
 # Deploying DES
 
-The following are instructions for running and deploying the Amazon AppStreawm Sample Entitlement Service (DES) in your account using packages built from this repository.
+The following are instructions for running and deploying the Amazon AppStream Sample Entitlement Service (DES) in your account using packages built from this repository.
 
 ## Prerequisites
 
