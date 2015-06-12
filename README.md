@@ -92,7 +92,7 @@ You can launch the DES application(s) and infrastructure with AWS CloudFormation
 
 1) Use this link to open the CloudFormation template directly in the AWS Managment Console: 
 
-[Open the DES CloudFormation template in the AWS Management Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=sample-appstream-entitlement-service&templateURL=https://netisense-des-staging-00.s3.amazonaws.com/sample-appstream-developer-entitlement-infrastructure/appstreamEntitlementService.template)
+[Open the DES CloudFormation template in the AWS Management Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=sample-appstream-entitlement-service&templateURL=https://netisense-des-staging-00.s3.amazonaws.com/amazon-appstream-sample-entitlement-service/infra/appstreamEntitlementService.template)
 
 2) Click Next
 
@@ -158,4 +158,19 @@ You must register your endpoint URI with your third-party authentication provide
 
 4) Click 'Save'
 
-You can now go to the application's endpoint URL and login with Login with Amazon!
+5) Navigage to the URL value of the WebPortalEndpointURL output of your CloudFormation stack + /admin.html. e.g.:
+
+`<WebPortalEndpointURL>/admin.html`  
+
+i.e.: https://123450123456789.cloudfront.net/admin.html
+
+You can login with the email you used as input to the CloudFormation stack parameter AdministratorUserEmail. 
+
+A Cognito user was setup for that email and you can use the Login with Amazon to authenticate!
+
+The customer endponit is at:
+
+`<WebPortalEndpointURL>/`
+
+i.e.: https://123450123456789.cloudfront.net/
+
