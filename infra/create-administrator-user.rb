@@ -14,6 +14,14 @@ cognitoidentity = Aws::CognitoIdentity::Client.new
 
 developer_user_identifier = Base64.encode64(email).strip.sub(/=+$/,'')
 
+resp = cognitoidentity.get_open_id_token_for_developer_identity({
+  identity_pool_id: cognito_identity_pool_id,
+  logins: {
+    developer_provider_name => developer_user_identifier
+  },
+  token_duration: 1,
+})
+
 resp = cognitoidentity.lookup_developer_identity(
   identity_pool_id: cognito_identity_pool_id,
   developer_user_identifier: developer_user_identifier,
